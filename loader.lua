@@ -8,6 +8,8 @@ end
 local ROOT = "https://raw.githubusercontent.com/eynchLoad/EynchHub/main/"
 local RAW = ROOT .. "games/"
 local LOGO_URL = ROOT .. "assets/logo.png"
+local DISCORD_CODE = "54aGSfX6dN"
+local DISCORD_URL = "https://discord.gg/" .. DISCORD_CODE
 
 -- One entry per game. To add a game: upload its script to games/ and add an entry here.
 --   file       the file name in games/ (without .lua)
@@ -31,6 +33,7 @@ local BLOCKED_EXECUTORS = {}
 
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
 local function notify(text)
 	pcall(function()
@@ -80,8 +83,8 @@ if not match then
 	return
 end
 
--- do not run twice in the same session
-if getgenv and getgenv().EynchHubLoaded then
+-- do not run twice in the same server (a new server after a rejoin has a new JobId, so it loads again)
+if getgenv and getgenv().EynchHubLoaded == game.JobId and game.JobId ~= "" then
 	notify(match.name .. " is already loaded.")
 	return
 end
@@ -102,6 +105,31 @@ local function getLogo()
 	return nil
 end
 
+-- Copies the invite. If the Discord app is open on a PC it also asks it to show the invite window; the player still
+-- chooses whether to join. Nothing joins automatically.
+local function joinDiscord()
+	local copied = false
+	if setclipboard then
+		pcall(function() setclipboard(DISCORD_URL) copied = true end)
+	end
+	pcall(function()
+		local req = (syn and syn.request) or request or http_request or (http and http.request)
+		if req then
+			req({
+				Url = "http://127.0.0.1:6463/rpc?v=1",
+				Method = "POST",
+				Headers = { ["Content-Type"] = "application/json", Origin = "https://discord.com" },
+				Body = HttpService:JSONEncode({
+					cmd = "INVITE_BROWSER",
+					args = { code = DISCORD_CODE },
+					nonce = HttpService:GenerateGUID(false),
+				}),
+			})
+		end
+	end)
+	return copied
+end
+
 local PINK = Color3.fromRGB(255, 140, 185)
 local PURPLE = Color3.fromRGB(190, 120, 255)
 
@@ -117,7 +145,7 @@ local function showSplash(text)
 		local card = Instance.new("CanvasGroup")
 		card.AnchorPoint = Vector2.new(0.5, 0.5)
 		card.Position = UDim2.fromScale(0.5, 0.5)
-		card.Size = UDim2.fromOffset(280, 214)
+		card.Size = UDim2.fromOffset(280, 256)
 		card.BackgroundColor3 = Color3.fromRGB(22, 12, 30)
 		card.BackgroundTransparency = 0.08
 		card.GroupTransparency = 1
@@ -226,6 +254,31 @@ local function showSplash(text)
 		local fillGrad = Instance.new("UIGradient", fill)
 		fillGrad.Color = ColorSequence.new(PINK, PURPLE)
 
+		-- Join Discord button
+		local join = Instance.new("TextButton")
+		join.AnchorPoint = Vector2.new(0.5, 0)
+		join.Position = UDim2.new(0.5, 0, 0, 208)
+		join.Size = UDim2.fromOffset(200, 32)
+		join.AutoButtonColor = false
+		join.Text = "💬  Join our Discord"
+		join.Font = Enum.Font.GothamBold
+		join.TextSize = 13
+		join.TextColor3 = Color3.new(1, 1, 1)
+		join.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		join.BackgroundTransparency = 0.15
+		join.Parent = card
+		Instance.new("UICorner", join).CornerRadius = UDim.new(1, 0)
+		local joinGrad = Instance.new("UIGradient", join)
+		joinGrad.Color = ColorSequence.new(PINK, PURPLE)
+		joinGrad.Rotation = 0
+		join.Activated:Connect(function()
+			local copied = joinDiscord()
+			join.Text = copied and "✓  Invite copied" or "discord.gg/" .. DISCORD_CODE
+			task.delay(2.5, function()
+				pcall(function() join.Text = "💬  Join our Discord" end)
+			end)
+		end)
+
 		local t = 0
 		local conn = RunService.RenderStepped:Connect(function(dt)
 			t = t + dt
@@ -256,6 +309,7 @@ local function showSplash(text)
 end
 
 local splash = showSplash("Loading " .. match.name .. "...")
+local splashAt = os.clock()
 
 --================ download and run ================--
 -- a short random wait so a lot of players loading at once do not all hit GitHub in the same moment
@@ -286,7 +340,10 @@ if not fn then
 	return
 end
 
-if getgenv then getgenv().EynchHubLoaded = true end
+if getgenv then getgenv().EynchHubLoaded = game.JobId end
+-- keep the card up for at least 2.5 seconds so the logo and the Discord button can be seen and used
+local left = 2.5 - (os.clock() - splashAt)
+if left > 0 then task.wait(left) end
 splash.close()
 local ok, runErr = pcall(fn)
 if not ok then
