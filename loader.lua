@@ -10,10 +10,10 @@ local KEY_WINDOW = "https://eynch-key.eynchhub.workers.dev/loader"
 -- Roblox game -> file in games/ (without .lua). Add a line here for each new game.
 -- Match by PlaceId (one place) or UniverseId (the whole game, including its other places).
 local places = {
-	[104178853788462] = "97pjmyz", -- Run a Sari-Sari Store!
+	[104178853788462] = "lkxk514", -- Run a Sari-Sari Store!
 }
 local universes = {
-	[10126644530] = "97pjmyz",
+	[10126644530] = "lkxk514",
 }
 
 local function notify(text)
