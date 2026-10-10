@@ -1,6 +1,6 @@
 # Eynch Hub
 
-Script hub for Roblox. No key needed.
+Script hub for Roblox. Free key: join the Discord and grab it there.
 
 ## Run it
 

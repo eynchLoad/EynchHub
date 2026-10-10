@@ -308,6 +308,133 @@ local function showSplash(text)
 	return { setText = function() end, close = function() end }
 end
 
+--================ key ================--
+-- The key is free and is posted in the Discord server (members only). Only a hash of it is stored here, so reading this file
+-- does not show it. Keep the key in the Discord channel and change KEY_HASH here if you ever change the key.
+local KEY_HASH = "1c0b5dab193f35a6"
+local KEY_FILE = "EynchHub/key.txt"
+
+local function hashKey(s)
+	s = "eynch|" .. s:lower()
+	local function fnv(seed)
+		local h = seed
+		for i = 1, #s do
+			h = bit32.bxor(h, s:byte(i))
+			-- h * 16777619 mod 2^32, split so the numbers stay exact
+			h = ((h % 65536) * 16777619 + (((math.floor(h / 65536) * 16777619) % 65536) * 65536)) % 4294967296
+		end
+		return string.format("%08x", h)
+	end
+	return fnv(2166136261) .. fnv(305419896)
+end
+
+local function keyOk(k)
+	k = tostring(k or ""):gsub("^%s+", ""):gsub("%s+$", "")
+	return k ~= "" and hashKey(k) == KEY_HASH, k
+end
+
+local function askKey()
+	local saved
+	pcall(function()
+		if isfile and readfile and isfile(KEY_FILE) then saved = readfile(KEY_FILE) end
+	end)
+	if saved and keyOk(saved) then return true end
+
+	local done, passed = false, false
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "EynchKey"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.DisplayOrder = 1000
+	gui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+
+	local card = Instance.new("Frame")
+	card.AnchorPoint = Vector2.new(0.5, 0.5)
+	card.Position = UDim2.fromScale(0.5, 0.5)
+	card.Size = UDim2.fromOffset(300, 220)
+	card.BackgroundColor3 = Color3.fromRGB(22, 12, 30)
+	card.Parent = gui
+	Instance.new("UICorner", card).CornerRadius = UDim.new(0, 18)
+	local rim = Instance.new("UIStroke", card)
+	rim.Thickness = 1.5
+	rim.Color = Color3.new(1, 1, 1)
+	Instance.new("UIGradient", rim).Color = ColorSequence.new(PINK, PURPLE)
+
+	local function label(txt, y, size, color, font)
+		local l = Instance.new("TextLabel")
+		l.BackgroundTransparency = 1
+		l.Position = UDim2.fromOffset(12, y)
+		l.Size = UDim2.new(1, -24, 0, size + 6)
+		l.Text = txt
+		l.Font = font or Enum.Font.Gotham
+		l.TextSize = size
+		l.TextColor3 = color
+		l.TextWrapped = true
+		l.Parent = card
+		return l
+	end
+	label("Eynch Hub", 12, 20, Color3.fromRGB(250, 240, 247), Enum.Font.GothamBold)
+	local msg = label("Join our Discord to get the free key.", 40, 12, Color3.fromRGB(190, 160, 182))
+
+	local box = Instance.new("TextBox")
+	box.Position = UDim2.fromOffset(20, 76)
+	box.Size = UDim2.new(1, -40, 0, 36)
+	box.BackgroundColor3 = Color3.fromRGB(40, 26, 52)
+	box.PlaceholderText = "Paste the key here"
+	box.PlaceholderColor3 = Color3.fromRGB(150, 125, 150)
+	box.Text = ""
+	box.ClearTextOnFocus = false
+	box.Font = Enum.Font.Gotham
+	box.TextSize = 14
+	box.TextColor3 = Color3.new(1, 1, 1)
+	box.Parent = card
+	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
+
+	local function button(txt, y, color)
+		local b = Instance.new("TextButton")
+		b.Position = UDim2.fromOffset(20, y)
+		b.Size = UDim2.new(1, -40, 0, 34)
+		b.AutoButtonColor = true
+		b.Text = txt
+		b.Font = Enum.Font.GothamBold
+		b.TextSize = 13
+		b.TextColor3 = Color3.new(1, 1, 1)
+		b.BackgroundColor3 = color
+		b.Parent = card
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+		return b
+	end
+	local check = button("Check key", 124, Color3.fromRGB(190, 90, 200))
+	local join = button("💬  Join Discord (copies invite)", 166, Color3.fromRGB(88, 101, 242))
+
+	local function submit()
+		local ok, k = keyOk(box.Text)
+		if ok then
+			pcall(function()
+				if writefile then
+					if isfolder and makefolder and not isfolder("EynchHub") then makefolder("EynchHub") end
+					writefile(KEY_FILE, k)
+				end
+			end)
+			passed, done = true, true
+		else
+			msg.Text = "Wrong key. Get the key in our Discord."
+			msg.TextColor3 = Color3.fromRGB(255, 120, 130)
+		end
+	end
+	check.Activated:Connect(submit)
+	box.FocusLost:Connect(function(enter) if enter then submit() end end)
+	join.Activated:Connect(function()
+		join.Text = joinDiscord() and "✓  Invite copied" or "discord.gg/" .. DISCORD_CODE
+	end)
+
+	while not done do task.wait(0.2) end
+	pcall(function() gui:Destroy() end)
+	return passed
+end
+
+if not askKey() then return end
+
 local splash = showSplash("Loading " .. match.name .. "...")
 local splashAt = os.clock()
 
