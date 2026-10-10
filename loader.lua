@@ -10,10 +10,10 @@ local KEY_WINDOW = "https://eynch-key.eynchhub.workers.dev/loader"
 -- Roblox game -> file in games/ (without .lua). Add a line here for each new game.
 -- Match by PlaceId (one place) or UniverseId (the whole game, including its other places).
 local places = {
-	[104178853788462] = "np8cj4k", -- Run a Sari-Sari Store!
+	[104178853788462] = "97pjmyz", -- Run a Sari-Sari Store!
 }
 local universes = {
-	[10126644530] = "np8cj4k",
+	[10126644530] = "97pjmyz",
 }
 
 local function notify(text)
@@ -34,10 +34,12 @@ end
 
 local ok, source = pcall(game.HttpGet, game, RAW .. file .. ".lua")
 local fn = ok and type(source) == "string" and loadstring(source)
+local ran = false
 if fn then
-	fn()
-else
-	-- GitHub could not be reached: open the key window directly
+	ran = pcall(fn)
+end
+if not ran then
+	-- GitHub could not be reached, or the game file failed to start: open the key window instead
 	getgenv().EYNCH_GAME = "sari-sari"
 	local ok2 = pcall(function()
 		loadstring(game:HttpGet(KEY_WINDOW))()
