@@ -341,19 +341,26 @@ local function askKey()
 	if saved and keyOk(saved) then return true end
 
 	local done, passed = false, false
+	local host = (gethui and gethui()) or game:GetService("CoreGui")
+	-- never stack two key windows (an old one from an earlier run)
+	pcall(function()
+		for _, old in ipairs(host:GetChildren()) do
+			if old.Name == "EynchKey" then old:Destroy() end
+		end
+	end)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "EynchKey"
 	gui.ResetOnSpawn = false
 	gui.IgnoreGuiInset = true
 	gui.DisplayOrder = 1000
-	gui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+	gui.Parent = host
 
 	local card = Instance.new("CanvasGroup")
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
 	card.Size = UDim2.fromOffset(290, 340)
 	card.BackgroundColor3 = Color3.fromRGB(22, 12, 30)
-	card.BackgroundTransparency = 0.08
+	card.BackgroundTransparency = 0
 	card.GroupTransparency = 1
 	card.Parent = gui
 	Instance.new("UICorner", card).CornerRadius = UDim.new(0, 20)
@@ -466,15 +473,22 @@ local function askKey()
 		b.Position = UDim2.new(0.5, 0, 0, y)
 		b.Size = UDim2.fromOffset(220, 34)
 		b.AutoButtonColor = false
-		b.Text = txt
-		b.Font = Enum.Font.GothamBold
-		b.TextSize = 13
-		b.TextColor3 = Color3.new(1, 1, 1)
+		b.Text = ""
 		b.BackgroundColor3 = Color3.new(1, 1, 1)
 		b.Parent = card
 		Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
 		local g = Instance.new("UIGradient", b)
 		g.Color = ColorSequence.new(c1, c2)
+		-- the text is its own label, so the gradient does not tint it
+		local lbl = Instance.new("TextLabel")
+		lbl.Name = "Label"
+		lbl.BackgroundTransparency = 1
+		lbl.Size = UDim2.fromScale(1, 1)
+		lbl.Text = txt
+		lbl.Font = Enum.Font.GothamBold
+		lbl.TextSize = 13
+		lbl.TextColor3 = Color3.new(1, 1, 1)
+		lbl.Parent = b
 		local s = Instance.new("UIScale", b)
 		b.MouseEnter:Connect(function()
 			TweenService:Create(s, TweenInfo.new(0.12), { Scale = 1.04 }):Play()
@@ -528,10 +542,51 @@ local function askKey()
 	check.Activated:Connect(submit)
 	box.FocusLost:Connect(function(enter) if enter then submit() end end)
 	join.Activated:Connect(function()
-		join.Text = joinDiscord() and "✓  Invite copied" or "discord.gg/" .. DISCORD_CODE
+		join.Label.Text = joinDiscord() and "✓  Invite copied" or "discord.gg/" .. DISCORD_CODE
+	end)
+
+	-- X button: close without loading
+	local x = Instance.new("TextButton")
+	x.AnchorPoint = Vector2.new(1, 0)
+	x.Position = UDim2.new(1, -10, 0, 10)
+	x.Size = UDim2.fromOffset(26, 26)
+	x.AutoButtonColor = false
+	x.Text = "✕"
+	x.Font = Enum.Font.GothamBold
+	x.TextSize = 13
+	x.TextColor3 = Color3.fromRGB(235, 215, 230)
+	x.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	x.BackgroundTransparency = 0.9
+	x.ZIndex = 5
+	x.Parent = card
+	Instance.new("UICorner", x).CornerRadius = UDim.new(1, 0)
+	x.MouseEnter:Connect(function() x.BackgroundTransparency = 0.75 end)
+	x.MouseLeave:Connect(function() x.BackgroundTransparency = 0.9 end)
+	x.Activated:Connect(function() passed, done = false, true end)
+
+	-- drag the card by holding anywhere on it (mouse or touch)
+	local UIS = game:GetService("UserInputService")
+	local dragging, dragStart, startPos
+	local function isPress(i)
+		return i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch
+	end
+	card.InputBegan:Connect(function(i)
+		if isPress(i) then
+			dragging, dragStart, startPos = true, i.Position, card.Position
+		end
+	end)
+	local moveConn = UIS.InputChanged:Connect(function(i)
+		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+			local d = i.Position - dragStart
+			card.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+		end
+	end)
+	local endConn = UIS.InputEnded:Connect(function(i)
+		if isPress(i) then dragging = false end
 	end)
 
 	while not done do task.wait(0.2) end
+	pcall(function() moveConn:Disconnect() endConn:Disconnect() end)
 	TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad), { GroupTransparency = 1 }):Play()
 	task.wait(0.28)
 	pcall(function() conn:Disconnect() end)
