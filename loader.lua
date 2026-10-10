@@ -348,38 +348,103 @@ local function askKey()
 	gui.DisplayOrder = 1000
 	gui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
 
-	local card = Instance.new("Frame")
+	local card = Instance.new("CanvasGroup")
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(300, 220)
+	card.Size = UDim2.fromOffset(290, 340)
 	card.BackgroundColor3 = Color3.fromRGB(22, 12, 30)
+	card.BackgroundTransparency = 0.08
+	card.GroupTransparency = 1
 	card.Parent = gui
-	Instance.new("UICorner", card).CornerRadius = UDim.new(0, 18)
+	Instance.new("UICorner", card).CornerRadius = UDim.new(0, 20)
+	local pop = Instance.new("UIScale", card)
+	pop.Scale = 0.9
+
 	local rim = Instance.new("UIStroke", card)
 	rim.Thickness = 1.5
 	rim.Color = Color3.new(1, 1, 1)
-	Instance.new("UIGradient", rim).Color = ColorSequence.new(PINK, PURPLE)
+	local rimGrad = Instance.new("UIGradient", rim)
+	rimGrad.Color = ColorSequence.new(PINK, PURPLE)
+	rimGrad.Rotation = 35
 
-	local function label(txt, y, size, color, font)
-		local l = Instance.new("TextLabel")
-		l.BackgroundTransparency = 1
-		l.Position = UDim2.fromOffset(12, y)
-		l.Size = UDim2.new(1, -24, 0, size + 6)
-		l.Text = txt
-		l.Font = font or Enum.Font.Gotham
-		l.TextSize = size
-		l.TextColor3 = color
-		l.TextWrapped = true
-		l.Parent = card
-		return l
+	-- spinning gradient ring + logo (same as the loading card)
+	local ringBox = Instance.new("Frame")
+	ringBox.BackgroundTransparency = 1
+	ringBox.AnchorPoint = Vector2.new(0.5, 0)
+	ringBox.Position = UDim2.new(0.5, 0, 0, 16)
+	ringBox.Size = UDim2.fromOffset(96, 96)
+	ringBox.Parent = card
+	local ring = Instance.new("Frame")
+	ring.BackgroundTransparency = 1
+	ring.Size = UDim2.fromScale(1, 1)
+	ring.Parent = ringBox
+	Instance.new("UICorner", ring).CornerRadius = UDim.new(1, 0)
+	local ringStroke = Instance.new("UIStroke", ring)
+	ringStroke.Thickness = 3
+	ringStroke.Color = Color3.new(1, 1, 1)
+	local ringGrad = Instance.new("UIGradient", ringStroke)
+	ringGrad.Color = ColorSequence.new(PINK, PURPLE)
+	ringGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.55, 0.9),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	local logoBox = Instance.new("Frame")
+	logoBox.BackgroundTransparency = 1
+	logoBox.AnchorPoint = Vector2.new(0.5, 0.5)
+	logoBox.Position = UDim2.fromScale(0.5, 0.5)
+	logoBox.Size = UDim2.fromOffset(72, 72)
+	logoBox.Parent = ringBox
+	local pulse = Instance.new("UIScale", logoBox)
+	local asset = getLogo()
+	if asset then
+		local img = Instance.new("ImageLabel")
+		img.BackgroundTransparency = 1
+		img.Size = UDim2.fromScale(1, 1)
+		img.Image = asset
+		img.ScaleType = Enum.ScaleType.Fit
+		img.Parent = logoBox
+	else
+		local e = Instance.new("TextLabel")
+		e.BackgroundTransparency = 1
+		e.Size = UDim2.fromScale(1, 1)
+		e.Text = "E"
+		e.Font = Enum.Font.GothamBlack
+		e.TextScaled = true
+		e.TextColor3 = Color3.new(1, 1, 1)
+		e.Parent = logoBox
+		local g = Instance.new("UIGradient", e)
+		g.Color = ColorSequence.new(PINK, PURPLE)
+		g.Rotation = 90
 	end
-	label("Eynch Hub", 12, 20, Color3.fromRGB(250, 240, 247), Enum.Font.GothamBold)
-	local msg = label("Join our Discord to get the free key.", 40, 12, Color3.fromRGB(190, 160, 182))
 
+	local title = Instance.new("TextLabel")
+	title.BackgroundTransparency = 1
+	title.Position = UDim2.fromOffset(0, 120)
+	title.Size = UDim2.new(1, 0, 0, 24)
+	title.Text = "Eynch Hub"
+	title.Font = Enum.Font.GothamBold
+	title.TextSize = 18
+	title.TextColor3 = Color3.fromRGB(250, 240, 247)
+	title.Parent = card
+
+	local msg = Instance.new("TextLabel")
+	msg.BackgroundTransparency = 1
+	msg.Position = UDim2.fromOffset(12, 146)
+	msg.Size = UDim2.new(1, -24, 0, 18)
+	msg.Text = "Join our Discord to get the free key"
+	msg.Font = Enum.Font.Gotham
+	msg.TextSize = 12
+	msg.TextColor3 = Color3.fromRGB(190, 160, 182)
+	msg.Parent = card
+
+	-- key box with a gradient outline
 	local box = Instance.new("TextBox")
-	box.Position = UDim2.fromOffset(20, 76)
-	box.Size = UDim2.new(1, -40, 0, 36)
+	box.AnchorPoint = Vector2.new(0.5, 0)
+	box.Position = UDim2.new(0.5, 0, 0, 176)
+	box.Size = UDim2.fromOffset(220, 36)
 	box.BackgroundColor3 = Color3.fromRGB(40, 26, 52)
+	box.BackgroundTransparency = 0.2
 	box.PlaceholderText = "Paste the key here"
 	box.PlaceholderColor3 = Color3.fromRGB(150, 125, 150)
 	box.Text = ""
@@ -388,38 +453,76 @@ local function askKey()
 	box.TextSize = 14
 	box.TextColor3 = Color3.new(1, 1, 1)
 	box.Parent = card
-	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
+	Instance.new("UICorner", box).CornerRadius = UDim.new(1, 0)
+	local boxStroke = Instance.new("UIStroke", box)
+	boxStroke.Thickness = 1.2
+	boxStroke.Color = Color3.new(1, 1, 1)
+	boxStroke.Transparency = 0.5
+	Instance.new("UIGradient", boxStroke).Color = ColorSequence.new(PINK, PURPLE)
 
-	local function button(txt, y, color)
+	local function button(txt, y, c1, c2)
 		local b = Instance.new("TextButton")
-		b.Position = UDim2.fromOffset(20, y)
-		b.Size = UDim2.new(1, -40, 0, 34)
-		b.AutoButtonColor = true
+		b.AnchorPoint = Vector2.new(0.5, 0)
+		b.Position = UDim2.new(0.5, 0, 0, y)
+		b.Size = UDim2.fromOffset(220, 34)
+		b.AutoButtonColor = false
 		b.Text = txt
 		b.Font = Enum.Font.GothamBold
 		b.TextSize = 13
 		b.TextColor3 = Color3.new(1, 1, 1)
-		b.BackgroundColor3 = color
+		b.BackgroundColor3 = Color3.new(1, 1, 1)
 		b.Parent = card
-		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+		Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
+		local g = Instance.new("UIGradient", b)
+		g.Color = ColorSequence.new(c1, c2)
+		local s = Instance.new("UIScale", b)
+		b.MouseEnter:Connect(function()
+			TweenService:Create(s, TweenInfo.new(0.12), { Scale = 1.04 }):Play()
+		end)
+		b.MouseLeave:Connect(function()
+			TweenService:Create(s, TweenInfo.new(0.12), { Scale = 1 }):Play()
+		end)
 		return b
 	end
-	local check = button("Check key", 124, Color3.fromRGB(190, 90, 200))
-	local join = button("💬  Join Discord (copies invite)", 166, Color3.fromRGB(88, 101, 242))
+	local check = button("Check key", 222, PINK, PURPLE)
+	local join = button("💬  Join Discord (copies invite)", 266, Color3.fromRGB(88, 101, 242), Color3.fromRGB(150, 110, 255))
 
+	local t = 0
+	local conn = RunService.RenderStepped:Connect(function(dt)
+		t = t + dt
+		ringGrad.Rotation = (t * 160) % 360
+		rimGrad.Rotation = 35 + math.sin(t) * 25
+		pulse.Scale = 1 + 0.045 * math.sin(t * 3.2)
+	end)
+	TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Quad), { GroupTransparency = 0 }):Play()
+	TweenService:Create(pop, TweenInfo.new(0.4, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+
+	local busy = false
 	local function submit()
+		if busy then return end
 		local ok, k = keyOk(box.Text)
 		if ok then
+			busy = true
 			pcall(function()
 				if writefile then
 					if isfolder and makefolder and not isfolder("EynchHub") then makefolder("EynchHub") end
 					writefile(KEY_FILE, k)
 				end
 			end)
+			msg.Text = "✓  Key accepted"
+			msg.TextColor3 = Color3.fromRGB(150, 235, 180)
+			task.wait(0.6)
 			passed, done = true, true
 		else
-			msg.Text = "Wrong key. Get the key in our Discord."
+			msg.Text = "Wrong key. Get it in our Discord."
 			msg.TextColor3 = Color3.fromRGB(255, 120, 130)
+			-- little shake
+			task.spawn(function()
+				for _, dx in ipairs({ 8, -8, 5, -5, 0 }) do
+					box.Position = UDim2.new(0.5, dx, 0, 176)
+					task.wait(0.04)
+				end
+			end)
 		end
 	end
 	check.Activated:Connect(submit)
@@ -429,6 +532,9 @@ local function askKey()
 	end)
 
 	while not done do task.wait(0.2) end
+	TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad), { GroupTransparency = 1 }):Play()
+	task.wait(0.28)
+	pcall(function() conn:Disconnect() end)
 	pcall(function() gui:Destroy() end)
 	return passed
 end
