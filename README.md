@@ -10,6 +10,12 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/eynchLoad/EynchHub/ma
 
 A key window opens. Press **GET KEY**, finish the short steps, paste the key, and press **VERIFY KEY & LOAD**.
 
+Prefer to get your key from our Discord? Use this one instead. It has a **Join Discord** button, and the key is free from the **Get Key** button there:
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/eynchLoad/EynchHub/main/discord-loader.lua"))()
+```
+
 ## Supported games
 
 | Game | Status |
