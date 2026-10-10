@@ -20,7 +20,7 @@ local DISCORD_URL = "https://discord.gg/" .. DISCORD_CODE
 local GAMES = {
 	{
 		name = "Run a Sari-Sari Store!",
-		file = "lkxk514",
+		file = "mf5de23",
 		places = { 104178853788462 },
 		universes = { 10126644530 },
 		creators = {},
