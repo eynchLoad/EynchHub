@@ -1,19 +1,11 @@
 # Eynch Hub
 
-Free script hub for Roblox. Keys are free, last 24 hours, and come from our Discord or from the key window.
+Script hub for Roblox. No key needed.
 
 ## Run it
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/eynchLoad/EynchHub/main/loader.lua"))()
-```
-
-A key window opens. Press **GET KEY**, finish the short steps, paste the key, and press **VERIFY KEY & LOAD**.
-
-Prefer to get your key from our Discord? Use this one instead. It has a **Join Discord** button, and the key is free from the **Get Key** button there:
-
-```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/eynchLoad/EynchHub/main/discord-loader.lua"))()
 ```
 
 ## Supported games
@@ -24,14 +16,14 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/eynchLoad/EynchHub/ma
 
 ## Links
 
-- Website and guide: https://eynch-hub-site.pages.dev
+- Website: https://eynch-hub-site.pages.dev
 - Discord: https://discord.gg/54aGSfX6dN
 
 ## Layout
 
 ```
-loader.lua        finds your game and runs its file
-games/            one file per game
+loader.lua   finds your game and runs its script
+games/       one script per game
 ```
 
-`loader.lua` holds the list of game IDs. To support a new game, add a file in `games/` and one line in `loader.lua`.
+To support a new game, upload its script to `games/` and add one entry in `loader.lua`.
