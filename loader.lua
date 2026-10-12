@@ -27,7 +27,7 @@ local GAMES = {
 	},
 	{
         name = "Talyer!",
-        file = "talyer",
+        file = "1io2poi",
         places = { 93820219970672 },
         universes = {},
         creators = {},
