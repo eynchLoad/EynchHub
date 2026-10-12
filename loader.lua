@@ -25,6 +25,13 @@ local GAMES = {
 		universes = { 10126644530 },
 		creators = {},
 	},
+	{
+        name = "Talyer!",
+        file = "talyer",
+        places = { 93820219970672 },
+        universes = {},
+        creators = {},
+    },
 }
 
 -- Executors that cannot run the scripts. Put the name (or part of it) in lowercase, for example { "solara", "xeno" }.
